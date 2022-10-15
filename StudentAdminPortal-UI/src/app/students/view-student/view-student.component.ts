@@ -38,6 +38,9 @@ export class ViewStudentComponent implements OnInit {
 
   genderList: Gender[] = [];
 
+  isNewStudent = false;
+  header = '';
+
   constructor(private readonly studentService: StudentService,
     private route: ActivatedRoute, private readonly genderService: GenderService,
     private snackBar:MatSnackBar , private router : Router) { }
@@ -47,26 +50,44 @@ export class ViewStudentComponent implements OnInit {
     this.route.paramMap.subscribe(
       (params) => {
         this.studentId = params.get('id');
+
+        if(this.studentId){
+
+          //If the route contains the 'Add' --> New Student Functionality
+          if(this.studentId.toLowerCase() === 'Add'.toLowerCase()){
+            this.isNewStudent = true;
+            this.header = 'Add New Student';
+
+          }else{
+            //Else --> Existing Student Functionality
+            this.isNewStudent = false;
+            this.header = 'Edit Student';
+
+              this.studentService.getStudent(this.studentId)
+            .subscribe(
+              (successResponse) => {
+                // console.log(successResponse);
+                this.student = successResponse
+              }
+            );
+
+          }
+
+          this.genderService.getGenderList()
+            .subscribe(
+              (successResponse) => {
+                // console.log(successResponse);
+                this.genderList = successResponse;
+              }
+            );
+
+
+
+        }
+
       });
 
-      if(this.studentId){
-        this.studentService.getStudent(this.studentId)
-        .subscribe(
-          (successResponse) => {
-            // console.log(successResponse);
-            this.student = successResponse
-          }
-        );
 
-        this.genderService.getGenderList()
-        .subscribe(
-          (successResponse) => {
-            // console.log(successResponse);
-            this.genderList = successResponse;
-          }
-        );
-
-      }
   }
 
   onUpdate(): void{
@@ -103,6 +124,25 @@ export class ViewStudentComponent implements OnInit {
           this.router.navigateByUrl('students');
         }, 2000);
 
+      },
+      (errorResponse) => {
+        console.log(errorResponse);
+      },
+    );
+  }
+
+  onAdd(): void{
+    this.studentService.addStudent(this.student).subscribe(
+      (successResponse) => {
+        // console.log(successResponse);
+        this.snackBar.open('Student Added Successfully',undefined,{
+          duration:2000
+        });
+
+        setTimeout(() => {
+          // this.router.navigateByUrl('students');
+          this.router.navigateByUrl(`students/${successResponse.id}`);
+        }, 2000);
       },
       (errorResponse) => {
         console.log(errorResponse);
