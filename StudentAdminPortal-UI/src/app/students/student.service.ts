@@ -44,7 +44,7 @@ export class StudentService {
   }
 
   addStudent(studentRequest: Student) : Observable<Student>{
-    
+
     const addStudentRequest: AddStudentRequest = {
       firstName: studentRequest.firstName,
       lastName: studentRequest.lastName,
@@ -58,6 +58,20 @@ export class StudentService {
 
     return this.httpClient.post<Student>(this.baseApiUrl + "/students/Add",addStudentRequest);
 
+  }
+
+  uploadImage(studentId: string, file : File): Observable<any>{
+    const formData = new FormData();
+    formData.append("profileImage", file);
+
+    return this.httpClient.post(this.baseApiUrl + "/students/"+studentId+'/upload-image',
+    formData,{
+      responseType : 'text'
+    });
+  }
+
+  getImagePath(relativePath : string){
+    return `${this.baseApiUrl}/${relativePath}`;
   }
 
 }
